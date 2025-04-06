@@ -220,11 +220,11 @@ in floor.rooms %} {% set total_devices = total_devices + room.devices|length %}
 
 <!-- Debug Info -->
 <script>
-  console.log('Total devices: {{ total_devices }}');
+  console.log("Total devices: {{ total_devices }}");
   // Log API device data when loaded (new)
   window.apiDevicesLoaded = function (count) {
-    console.log('API devices loaded: ' + count);
-    document.getElementById('api-device-count').textContent = count;
+    console.log("API devices loaded: " + count);
+    document.getElementById("api-device-count").textContent = count;
   };
 </script>
 
@@ -591,16 +591,54 @@ current_home.floors|sort(attribute='floor_number') %}
   </div>
   {% endif %}
 </div>
-{% endfor %} {% endif %} {% endif %} {% endblock %} {% block custom_js %}
+{% endfor %} {% endif %} {% endif %}
+<div x-data="deviceManager" class="container mt-4">
+  <div class="row g-4">
+    <template x-for="device in devices" :key="device.id">
+      <div class="col-md-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="card-title" x-text="device.name"></h5>
+              <i :class="iconClass(device.type)" class="fs-4 text-primary"></i>
+            </div>
+            <p class="card-text">
+              Type: <strong x-text="device.type"></strong><br />
+              Status:
+              <span
+                :class="statusClass(device.status)"
+                x-text="device.status"
+              ></span>
+              <br />
+              Last Seen:
+              <span x-text="new Date(device.last_seen).toLocaleString()"></span>
+            </p>
+            <button
+              class="btn"
+              :class="device.is_active ? 'btn-danger' : 'btn-success'"
+              @click="toggleDevice(device)"
+            >
+              <i
+                :class="device.is_active ? 'fas fa-power-off' : 'fas fa-play'"
+              ></i>
+              <span x-text="device.is_active ? 'Turn Off' : 'Turn On'"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+{% endblock %} {% block custom_js %}
 <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script>
   // Improved floor navigation functionality with better error handling
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     // Create a local scope for these functions to avoid global namespace conflicts
     (function () {
-      const floorButtons = document.querySelectorAll('.floor-button');
-      const floorContainers = document.querySelectorAll('.floor-container');
+      const floorButtons = document.querySelectorAll(".floor-button");
+      const floorContainers = document.querySelectorAll(".floor-container");
 
       // Helper function to log navigation events for debugging
       function logNavEvent(message) {
@@ -612,31 +650,31 @@ current_home.floors|sort(attribute='floor_number') %}
         if (!floorContainer) return;
 
         if (isVisible) {
-          floorContainer.classList.add('active');
-          floorContainer.style.display = 'block';
+          floorContainer.classList.add("active");
+          floorContainer.style.display = "block";
 
           // Use setTimeout to ensure the display change takes effect before applying opacity
           setTimeout(() => {
             // Check if element still exists before setting property
             if (floorContainer && floorContainer.style) {
-              floorContainer.style.opacity = '1';
+              floorContainer.style.opacity = "1";
             }
           }, 10);
         } else {
-          floorContainer.classList.remove('active');
+          floorContainer.classList.remove("active");
 
           // Check if element exists before setting property
           if (floorContainer && floorContainer.style) {
-            floorContainer.style.opacity = '0';
+            floorContainer.style.opacity = "0";
           }
 
           // Don't hide the element immediately, wait for fade out
           setTimeout(() => {
             if (
               floorContainer &&
-              !floorContainer.classList.contains('active')
+              !floorContainer.classList.contains("active")
             ) {
-              floorContainer.style.display = 'none';
+              floorContainer.style.display = "none";
             }
           }, 300);
         }
@@ -644,17 +682,17 @@ current_home.floors|sort(attribute='floor_number') %}
 
       // Add click event to floor buttons
       floorButtons.forEach((button) => {
-        button.addEventListener('click', function () {
-          const floorNum = this.getAttribute('data-floor');
-          const deviceCount = this.getAttribute('data-device-count') || '0';
+        button.addEventListener("click", function () {
+          const floorNum = this.getAttribute("data-floor");
+          const deviceCount = this.getAttribute("data-device-count") || "0";
 
           logNavEvent(
             `Switching to floor ${floorNum} with ${deviceCount} devices`
           );
 
           // Update active button
-          floorButtons.forEach((btn) => btn.classList.remove('active'));
-          this.classList.add('active');
+          floorButtons.forEach((btn) => btn.classList.remove("active"));
+          this.classList.add("active");
 
           // Show selected floor, hide others
           floorContainers.forEach((container) => {
@@ -668,12 +706,12 @@ current_home.floors|sort(attribute='floor_number') %}
 
           // Update URL with selected floor
           const url = new URL(window.location);
-          url.searchParams.set('floor', floorNum);
-          window.history.replaceState({}, '', url);
+          url.searchParams.set("floor", floorNum);
+          window.history.replaceState({}, "", url);
 
           // Trigger custom event for analytics or other components
           document.dispatchEvent(
-            new CustomEvent('floorChanged', {
+            new CustomEvent("floorChanged", {
               detail: {
                 floorNumber: floorNum,
                 deviceCount: parseInt(deviceCount),
@@ -686,7 +724,7 @@ current_home.floors|sort(attribute='floor_number') %}
       // Check URL parameters for floor selection on page load
       function initializeFromUrl() {
         const urlParams = new URLSearchParams(window.location.search);
-        const floorParam = urlParams.get('floor');
+        const floorParam = urlParams.get("floor");
 
         if (floorParam) {
           logNavEvent(`URL contains floor parameter: ${floorParam}`);
@@ -706,14 +744,14 @@ current_home.floors|sort(attribute='floor_number') %}
 
       // Fix floor visibility issues
       function fixFloorVisibility() {
-        const activeFloor = document.querySelector('.floor-container.active');
+        const activeFloor = document.querySelector(".floor-container.active");
 
         // If no active floor or active floor is hidden, show the first one
         if (
           !activeFloor ||
-          window.getComputedStyle(activeFloor).display === 'none'
+          window.getComputedStyle(activeFloor).display === "none"
         ) {
-          logNavEvent('No active floor found or active floor is hidden');
+          logNavEvent("No active floor found or active floor is hidden");
           if (floorContainers.length > 0) {
             const firstFloor = floorContainers[0];
             setFloorVisibility(firstFloor, true);
@@ -721,12 +759,12 @@ current_home.floors|sort(attribute='floor_number') %}
 
             // Also activate the corresponding button, if any
             if (floorButtons.length > 0) {
-              floorButtons[0].classList.add('active');
+              floorButtons[0].classList.add("active");
             }
           }
         } else if (
           activeFloor &&
-          window.getComputedStyle(activeFloor).display === 'none'
+          window.getComputedStyle(activeFloor).display === "none"
         ) {
           // Fix a specific case where active class exists but display is still none
           setFloorVisibility(activeFloor, true);
@@ -747,18 +785,18 @@ current_home.floors|sort(attribute='floor_number') %}
         // Final verification that something is visible
         setTimeout(() => {
           const anyVisible = Array.from(floorContainers).some(
-            (container) => window.getComputedStyle(container).display !== 'none'
+            (container) => window.getComputedStyle(container).display !== "none"
           );
 
           if (!anyVisible && floorContainers.length > 0) {
             logNavEvent(
-              'CRITICAL: No floor containers visible after initialization'
+              "CRITICAL: No floor containers visible after initialization"
             );
 
             // Force first floor visible as last resort
             setFloorVisibility(floorContainers[0], true);
             if (floorButtons.length > 0) {
-              floorButtons[0].classList.add('active');
+              floorButtons[0].classList.add("active");
             }
           }
         }, 300);
@@ -768,97 +806,97 @@ current_home.floors|sort(attribute='floor_number') %}
       initializeFloorNavigation();
 
       // Additional check after full page load
-      window.addEventListener('load', function () {
+      window.addEventListener("load", function () {
         setTimeout(fixFloorVisibility, 100);
 
         // Check for "no devices" message
-        const deviceCards = document.querySelectorAll('.device-card');
-        const noDevicesMessage = document.getElementById('no-devices-message');
+        const deviceCards = document.querySelectorAll(".device-card");
+        const noDevicesMessage = document.getElementById("no-devices-message");
 
         if (deviceCards.length > 0 && noDevicesMessage) {
-          noDevicesMessage.style.display = 'none';
-          logNavEvent('Hidden no-devices message because devices exist');
+          noDevicesMessage.style.display = "none";
+          logNavEvent("Hidden no-devices message because devices exist");
         }
 
         // Update debug counter - Add null check to fix the error
-        const debugCounter = document.getElementById('debug-device-count');
+        const debugCounter = document.getElementById("debug-device-count");
         if (debugCounter) {
           debugCounter.textContent = deviceCards.length;
         } else {
-          console.warn('Debug device count element not found in the DOM');
+          console.warn("Debug device count element not found in the DOM");
         }
       });
 
       // Device control functionality - Send commands to server via REST API
       const deviceActionButtons =
-        document.querySelectorAll('.device-action-btn');
+        document.querySelectorAll(".device-action-btn");
 
       // Event delegation for device actions
       deviceActionButtons.forEach((btn) => {
-        btn.addEventListener('click', function () {
-          const deviceId = this.getAttribute('data-device-id');
-          const action = this.getAttribute('data-action');
+        btn.addEventListener("click", function () {
+          const deviceId = this.getAttribute("data-device-id");
+          const action = this.getAttribute("data-action");
           let payload = {};
 
           // Different actions for different device types
-          if (deviceId.includes('temp')) {
-            if (action === 'calibrate') {
-              payload = { command: 'calibrate', value: 0, unit: 'celsius' };
-            } else if (action === 'set_threshold') {
+          if (deviceId.includes("temp")) {
+            if (action === "calibrate") {
+              payload = { command: "calibrate", value: 0, unit: "celsius" };
+            } else if (action === "set_threshold") {
               const threshold = prompt(
-                'Enter temperature threshold (°C):',
-                '25'
+                "Enter temperature threshold (°C):",
+                "25"
               );
               if (threshold === null) return; // User canceled
               payload = {
-                command: 'set_threshold',
+                command: "set_threshold",
                 value: parseFloat(threshold),
-                unit: 'celsius',
+                unit: "celsius",
               };
-            } else if (action === 'power_save') {
-              payload = { command: 'power_save', value: true };
+            } else if (action === "power_save") {
+              payload = { command: "power_save", value: true };
             }
-          } else if (deviceId.includes('humidity')) {
-            if (action === 'calibrate') {
-              payload = { command: 'calibrate', value: 0, unit: 'percent' };
-            } else if (action === 'set_threshold') {
-              const threshold = prompt('Enter humidity threshold (%):', '50');
+          } else if (deviceId.includes("humidity")) {
+            if (action === "calibrate") {
+              payload = { command: "calibrate", value: 0, unit: "percent" };
+            } else if (action === "set_threshold") {
+              const threshold = prompt("Enter humidity threshold (%):", "50");
               if (threshold === null) return; // User canceled
               payload = {
-                command: 'set_threshold',
+                command: "set_threshold",
                 value: parseFloat(threshold),
-                unit: 'percent',
+                unit: "percent",
               };
-            } else if (action === 'auto_mode') {
-              payload = { command: 'auto_mode', value: true };
+            } else if (action === "auto_mode") {
+              payload = { command: "auto_mode", value: true };
             }
-          } else if (deviceId.includes('light')) {
-            if (action === 'toggle') {
-              const currentState = this.getAttribute('data-state') === 'on';
+          } else if (deviceId.includes("light")) {
+            if (action === "toggle") {
+              const currentState = this.getAttribute("data-state") === "on";
               const newState = !currentState;
-              this.setAttribute('data-state', newState ? 'on' : 'off');
-              payload = { command: 'power', value: newState };
-            } else if (action === 'brightness') {
+              this.setAttribute("data-state", newState ? "on" : "off");
+              payload = { command: "power", value: newState };
+            } else if (action === "brightness") {
               const brightness = prompt(
-                'Enter brightness level (0-100):',
-                '50'
+                "Enter brightness level (0-100):",
+                "50"
               );
               if (brightness === null) return; // User canceled
               payload = {
-                command: 'brightness',
+                command: "brightness",
                 value: parseInt(brightness),
-                unit: 'percent',
+                unit: "percent",
               };
-            } else if (action === 'color_temp') {
+            } else if (action === "color_temp") {
               const colorTemp = prompt(
-                'Enter color temperature (2700-6500K):',
-                '4000'
+                "Enter color temperature (2700-6500K):",
+                "4000"
               );
               if (colorTemp === null) return; // User canceled
               payload = {
-                command: 'color_temp',
+                command: "color_temp",
                 value: parseInt(colorTemp),
-                unit: 'kelvin',
+                unit: "kelvin",
               };
             }
           }
@@ -879,30 +917,30 @@ current_home.floors|sort(attribute='floor_number') %}
 
         // Use the existing '/api/devices/${deviceId}/control' endpoint
         fetch(`/api/devices/${deviceId}/control`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
           },
-          credentials: 'same-origin',
+          credentials: "same-origin",
           body: JSON.stringify(payload),
         })
           .then((response) => response.json())
           .then((data) => {
-            console.log('Command sent successfully:', data);
+            console.log("Command sent successfully:", data);
             if (data.success) {
-              showCommandFeedback(deviceId, action, 'success');
+              showCommandFeedback(deviceId, action, "success");
             } else {
-              showCommandFeedback(deviceId, action, 'danger');
+              showCommandFeedback(deviceId, action, "danger");
             }
           })
           .catch((error) => {
-            console.error('Error sending command:', error);
-            showCommandFeedback(deviceId, action, 'danger');
+            console.error("Error sending command:", error);
+            showCommandFeedback(deviceId, action, "danger");
           });
       }
 
-      function showCommandFeedback(deviceId, action, status = 'success') {
+      function showCommandFeedback(deviceId, action, status = "success") {
         // Display a temporary notification near the device
         const deviceElement = document.querySelector(
           `[data-device-id="${deviceId}"]`
@@ -910,69 +948,69 @@ current_home.floors|sort(attribute='floor_number') %}
 
         if (!deviceElement) return;
 
-        const feedbackElement = document.createElement('div');
+        const feedbackElement = document.createElement("div");
         feedbackElement.classList.add(
-          'command-feedback',
-          'alert',
+          "command-feedback",
+          "alert",
           `alert-${status}`,
-          'position-absolute'
+          "position-absolute"
         );
-        feedbackElement.style.top = '10px';
-        feedbackElement.style.right = '10px';
-        feedbackElement.style.zIndex = '100';
-        feedbackElement.style.opacity = '0';
-        feedbackElement.style.transition = 'opacity 0.3s ease-in-out';
-        feedbackElement.style.padding = '8px 12px';
-        feedbackElement.style.fontSize = '14px';
-        feedbackElement.style.borderRadius = '4px';
-        feedbackElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+        feedbackElement.style.top = "10px";
+        feedbackElement.style.right = "10px";
+        feedbackElement.style.zIndex = "100";
+        feedbackElement.style.opacity = "0";
+        feedbackElement.style.transition = "opacity 0.3s ease-in-out";
+        feedbackElement.style.padding = "8px 12px";
+        feedbackElement.style.fontSize = "14px";
+        feedbackElement.style.borderRadius = "4px";
+        feedbackElement.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
 
-        if (status === 'success') {
+        if (status === "success") {
           feedbackElement.textContent = `Command "${action}" sent!`;
         } else {
           feedbackElement.textContent = `Failed to send "${action}"`;
         }
 
-        deviceElement.style.position = 'relative';
+        deviceElement.style.position = "relative";
         deviceElement.appendChild(feedbackElement);
 
         // Show and then fade out
         setTimeout(() => {
-          feedbackElement.style.opacity = '1';
+          feedbackElement.style.opacity = "1";
         }, 10);
 
         setTimeout(() => {
-          feedbackElement.style.opacity = '0';
+          feedbackElement.style.opacity = "0";
           setTimeout(() => feedbackElement.remove(), 300);
         }, 2000);
       }
 
       // Setup filtering functionality
-      const showFilterBtn = document.getElementById('showFilterBtn');
+      const showFilterBtn = document.getElementById("showFilterBtn");
       const filterContainer = document.getElementById(
-        'device-filter-container'
+        "device-filter-container"
       );
-      const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
+      const toggleFiltersBtn = document.getElementById("toggleFiltersBtn");
 
       if (showFilterBtn && filterContainer) {
-        showFilterBtn.addEventListener('click', function () {
+        showFilterBtn.addEventListener("click", function () {
           filterContainer.style.display =
-            filterContainer.style.display === 'none' ? 'block' : 'none';
+            filterContainer.style.display === "none" ? "block" : "none";
           showFilterBtn.innerHTML =
-            filterContainer.style.display === 'none'
+            filterContainer.style.display === "none"
               ? '<i class="fas fa-filter me-1"></i>Filter'
               : '<i class="fas fa-times me-1"></i>Hide Filters';
         });
       }
 
       if (toggleFiltersBtn) {
-        const filterBody = document.getElementById('filterBody');
-        toggleFiltersBtn.addEventListener('click', function () {
+        const filterBody = document.getElementById("filterBody");
+        toggleFiltersBtn.addEventListener("click", function () {
           if (filterBody) {
             filterBody.style.display =
-              filterBody.style.display === 'none' ? 'block' : 'none';
+              filterBody.style.display === "none" ? "block" : "none";
             toggleFiltersBtn.innerHTML =
-              filterBody.style.display === 'none'
+              filterBody.style.display === "none"
                 ? '<i class="fas fa-chevron-down"></i>'
                 : '<i class="fas fa-chevron-up"></i>';
           }
@@ -980,34 +1018,34 @@ current_home.floors|sort(attribute='floor_number') %}
       }
 
       // Setup dashboard filters functionality
-      const dashFilterFloor = document.getElementById('dashFilterFloor');
-      const dashFilterRoom = document.getElementById('dashFilterRoom');
-      const dashFilterType = document.getElementById('dashFilterType');
+      const dashFilterFloor = document.getElementById("dashFilterFloor");
+      const dashFilterRoom = document.getElementById("dashFilterRoom");
+      const dashFilterType = document.getElementById("dashFilterType");
 
       function applyDashboardFilters() {
-        const floorFilter = dashFilterFloor?.value || 'all';
-        const roomFilter = dashFilterRoom?.value || 'all';
-        const typeFilter = dashFilterType?.value || 'all';
+        const floorFilter = dashFilterFloor?.value || "all";
+        const roomFilter = dashFilterRoom?.value || "all";
+        const typeFilter = dashFilterType?.value || "all";
 
-        const deviceCards = document.querySelectorAll('.device-card');
+        const deviceCards = document.querySelectorAll(".device-card");
         let visibleCount = 0;
 
         deviceCards.forEach((card) => {
-          const room = card.dataset.room || '';
-          const floor = card.dataset.floor || '';
-          const deviceType = card.dataset.deviceType || '';
+          const room = card.dataset.room || "";
+          const floor = card.dataset.floor || "";
+          const deviceType = card.dataset.deviceType || "";
 
-          const floorMatch = floorFilter === 'all' || floor === floorFilter;
-          const roomMatch = roomFilter === 'all' || room === roomFilter;
-          const typeMatch = typeFilter === 'all' || deviceType === typeFilter;
+          const floorMatch = floorFilter === "all" || floor === floorFilter;
+          const roomMatch = roomFilter === "all" || room === roomFilter;
+          const typeMatch = typeFilter === "all" || deviceType === typeFilter;
 
-          const container = card.closest('.device-card-container');
+          const container = card.closest(".device-card-container");
 
           if (floorMatch && roomMatch && typeMatch) {
-            if (container) container.style.display = 'block';
+            if (container) container.style.display = "block";
             visibleCount++;
           } else {
-            if (container) container.style.display = 'none';
+            if (container) container.style.display = "none";
           }
         });
 
@@ -1023,33 +1061,33 @@ current_home.floors|sort(attribute='floor_number') %}
       }
 
       function updateDashFilterSummary(floor, room, type, count) {
-        const summary = document.getElementById('dash-filter-summary');
+        const summary = document.getElementById("dash-filter-summary");
         if (summary) {
-          summary.style.display = 'block';
+          summary.style.display = "block";
 
           const floorText =
-            floor === 'all'
-              ? 'All Floors'
+            floor === "all"
+              ? "All Floors"
               : document.querySelector(
                   `#dashFilterFloor option[value="${floor}"]`
                 )?.textContent || `Floor ${floor}`;
 
           const roomText =
-            room === 'all'
-              ? 'All Rooms'
+            room === "all"
+              ? "All Rooms"
               : document.querySelector(
                   `#dashFilterRoom option[value="${room}"]`
                 )?.textContent || room;
 
           const typeText =
-            type === 'all'
-              ? 'All Types'
+            type === "all"
+              ? "All Types"
               : document.querySelector(
                   `#dashFilterType option[value="${type}"]`
                 )?.textContent || type;
 
           summary.innerHTML = `
-            <strong>Showing:</strong> ${count} device${count !== 1 ? 's' : ''}
+            <strong>Showing:</strong> ${count} device${count !== 1 ? "s" : ""}
             <span class="badge bg-primary">${floorText}</span>
             <span class="badge bg-secondary">${roomText}</span>
             <span class="badge bg-info">${typeText}</span>
@@ -1061,9 +1099,9 @@ current_home.floors|sort(attribute='floor_number') %}
       }
 
       function resetDashFilters() {
-        if (dashFilterFloor) dashFilterFloor.value = 'all';
-        if (dashFilterRoom) dashFilterRoom.value = 'all';
-        if (dashFilterType) dashFilterType.value = 'all';
+        if (dashFilterFloor) dashFilterFloor.value = "all";
+        if (dashFilterRoom) dashFilterRoom.value = "all";
+        if (dashFilterType) dashFilterType.value = "all";
         applyDashboardFilters();
       }
 
@@ -1072,38 +1110,38 @@ current_home.floors|sort(attribute='floor_number') %}
 
       // Add filter event listeners
       if (dashFilterFloor) {
-        dashFilterFloor.addEventListener('change', applyDashboardFilters);
+        dashFilterFloor.addEventListener("change", applyDashboardFilters);
       }
 
       if (dashFilterRoom) {
-        dashFilterRoom.addEventListener('change', applyDashboardFilters);
+        dashFilterRoom.addEventListener("change", applyDashboardFilters);
       }
 
       if (dashFilterType) {
-        dashFilterType.addEventListener('change', applyDashboardFilters);
+        dashFilterType.addEventListener("change", applyDashboardFilters);
       }
 
       // Check if we have devices and show filter button if needed
-      const deviceCount = document.querySelectorAll('.device-card').length;
+      const deviceCount = document.querySelectorAll(".device-card").length;
       if (deviceCount > 0 && filterContainer) {
-        filterContainer.style.display = 'none'; // Hidden by default
+        filterContainer.style.display = "none"; // Hidden by default
         if (showFilterBtn) {
-          showFilterBtn.style.display = 'block'; // Show the filter button
+          showFilterBtn.style.display = "block"; // Show the filter button
         }
       }
     })(); // Immediately invoke the function to create a closure
   });
 
   // Add toast notification system for debug info and status updates
-  function showToast(message, type = 'info') {
+  function showToast(message, type = "info") {
     const toastContainer =
-      document.getElementById('toast-container') || createToastContainer();
+      document.getElementById("toast-container") || createToastContainer();
 
-    const toast = document.createElement('div');
+    const toast = document.createElement("div");
     toast.className = `toast show bg-${type} text-white`;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
+    toast.setAttribute("role", "alert");
+    toast.setAttribute("aria-live", "assertive");
+    toast.setAttribute("aria-atomic", "true");
 
     toast.innerHTML = `
       <div class="toast-header bg-${type} text-white">
@@ -1120,23 +1158,23 @@ current_home.floors|sort(attribute='floor_number') %}
 
     // Auto dismiss after 5 seconds
     setTimeout(() => {
-      toast.classList.remove('show');
+      toast.classList.remove("show");
       setTimeout(() => toast.remove(), 300);
     }, 5000);
   }
 
   function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toast-container';
-    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-    container.style.zIndex = '1050';
+    const container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container position-fixed bottom-0 end-0 p-3";
+    container.style.zIndex = "1050";
     document.body.appendChild(container);
     return container;
   }
 
   // Add fail-safe script to fix device visibility issues
-  document.addEventListener('DOMContentLoaded', function () {
-    const apiDeviceCountEl = document.getElementById('api-device-count');
+  document.addEventListener("DOMContentLoaded", function () {
+    const apiDeviceCountEl = document.getElementById("api-device-count");
 
     if (apiDeviceCountEl) {
       const observer = new MutationObserver(function (mutations) {
@@ -1145,34 +1183,34 @@ current_home.floors|sort(attribute='floor_number') %}
             const deviceCount = parseInt(apiDeviceCountEl.textContent, 10);
             if (deviceCount > 0) {
               const noDevicesMessage =
-                document.getElementById('no-devices-message');
+                document.getElementById("no-devices-message");
               if (noDevicesMessage) {
-                noDevicesMessage.style.display = 'none';
-                console.log('Hidden no-devices-message via mutation observer');
+                noDevicesMessage.style.display = "none";
+                console.log("Hidden no-devices-message via mutation observer");
               }
 
-              const dashboardStats = document.querySelector('.dashboard-stats');
+              const dashboardStats = document.querySelector(".dashboard-stats");
               if (
                 dashboardStats &&
-                window.getComputedStyle(dashboardStats).display === 'none'
+                window.getComputedStyle(dashboardStats).display === "none"
               ) {
-                dashboardStats.style.display = 'flex';
-                console.log('Shown dashboard-stats via mutation observer');
+                dashboardStats.style.display = "flex";
+                console.log("Shown dashboard-stats via mutation observer");
               }
 
               const activeFloor = document.querySelector(
-                '.floor-container.active'
+                ".floor-container.active"
               );
               if (
                 activeFloor &&
-                window.getComputedStyle(activeFloor).display === 'none'
+                window.getComputedStyle(activeFloor).display === "none"
               ) {
-                activeFloor.style.display = 'block';
-                console.log('Fixed active floor display via mutation observer');
+                activeFloor.style.display = "block";
+                console.log("Fixed active floor display via mutation observer");
               }
             }
           } catch (e) {
-            console.error('Error in mutation observer:', e);
+            console.error("Error in mutation observer:", e);
           }
         });
       });
@@ -1184,54 +1222,54 @@ current_home.floors|sort(attribute='floor_number') %}
       });
     } else {
       console.warn(
-        'API device count element not found, skipping mutation observer'
+        "API device count element not found, skipping mutation observer"
       );
     }
 
     // Try to fix common display issues anyway
     setTimeout(() => {
       try {
-        const deviceCards = document.querySelectorAll('.device-card');
+        const deviceCards = document.querySelectorAll(".device-card");
         if (deviceCards.length > 0) {
           const noDevicesMessage =
-            document.getElementById('no-devices-message');
+            document.getElementById("no-devices-message");
           if (noDevicesMessage) {
-            noDevicesMessage.style.display = 'none';
+            noDevicesMessage.style.display = "none";
           }
 
           // Ensure at least one floor is visible
-          const activeFloor = document.querySelector('.floor-container.active');
+          const activeFloor = document.querySelector(".floor-container.active");
           if (!activeFloor) {
-            const firstFloor = document.querySelector('.floor-container');
+            const firstFloor = document.querySelector(".floor-container");
             if (firstFloor) {
-              firstFloor.classList.add('active');
-              firstFloor.style.display = 'block';
-              firstFloor.style.opacity = '1';
+              firstFloor.classList.add("active");
+              firstFloor.style.display = "block";
+              firstFloor.style.opacity = "1";
             }
           }
         }
       } catch (e) {
-        console.error('Error in fallback visibility fix:', e);
+        console.error("Error in fallback visibility fix:", e);
       }
     }, 300);
   });
 
   // Add device card data-attribute enhancement for filtering
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     // Add necessary data attributes to device cards for filtering
-    const deviceCards = document.querySelectorAll('.device-card');
+    const deviceCards = document.querySelectorAll(".device-card");
 
     deviceCards.forEach((card) => {
       const roomHeader = card
-        .closest('.room-card')
-        ?.querySelector('.room-header h5');
-      const roomName = roomHeader ? roomHeader.textContent.trim() : '';
+        .closest(".room-card")
+        ?.querySelector(".room-header h5");
+      const roomName = roomHeader ? roomHeader.textContent.trim() : "";
 
-      const floorBadge = card.closest('.room-card')?.querySelector('.badge');
-      const floorText = floorBadge ? floorBadge.textContent.trim() : '';
+      const floorBadge = card.closest(".room-card")?.querySelector(".badge");
+      const floorText = floorBadge ? floorBadge.textContent.trim() : "";
 
       // Extract floor number - either from floor text or from the active floor
-      let floorNum = '';
+      let floorNum = "";
       if (floorText) {
         const match = floorText.match(/Floor\s+(\d+)/);
         if (match) floorNum = match[1];
@@ -1239,7 +1277,7 @@ current_home.floors|sort(attribute='floor_number') %}
 
       // If no floor number found, try to get it from the active floor container
       if (!floorNum) {
-        const activeFloor = document.querySelector('.floor-container.active');
+        const activeFloor = document.querySelector(".floor-container.active");
         if (activeFloor) {
           const floorIdMatch = activeFloor.id.match(/floor-(\d+)/);
           if (floorIdMatch) floorNum = floorIdMatch[1];
@@ -1248,7 +1286,7 @@ current_home.floors|sort(attribute='floor_number') %}
 
       // Set data attributes for filtering
       if (roomName) {
-        card.dataset.room = roomName.toLowerCase().replace(/\s+/g, '_');
+        card.dataset.room = roomName.toLowerCase().replace(/\s+/g, "_");
       }
       if (floorNum) {
         card.dataset.floor = floorNum;
@@ -1257,14 +1295,14 @@ current_home.floors|sort(attribute='floor_number') %}
       // Ensure device type is set
       if (!card.dataset.deviceType) {
         // Try to determine from device class or content
-        if (card.querySelector('.fa-thermometer-half')) {
-          card.dataset.deviceType = 'temperature';
-        } else if (card.querySelector('.fa-tint')) {
-          card.dataset.deviceType = 'humidity';
-        } else if (card.querySelector('.fa-lightbulb')) {
-          card.dataset.deviceType = 'light';
+        if (card.querySelector(".fa-thermometer-half")) {
+          card.dataset.deviceType = "temperature";
+        } else if (card.querySelector(".fa-tint")) {
+          card.dataset.deviceType = "humidity";
+        } else if (card.querySelector(".fa-lightbulb")) {
+          card.dataset.deviceType = "light";
         } else {
-          card.dataset.deviceType = 'generic';
+          card.dataset.deviceType = "generic";
         }
       }
     });
@@ -1275,15 +1313,15 @@ current_home.floors|sort(attribute='floor_number') %}
   });
 
   // Add permanent "no devices" message handling
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     // Permanently hide no devices message when API confirms devices exist
-    const apiDeviceCountEl = document.getElementById('api-device-count');
-    const noDevicesMessage = document.getElementById('no-devices-message');
+    const apiDeviceCountEl = document.getElementById("api-device-count");
+    const noDevicesMessage = document.getElementById("no-devices-message");
 
     // Create a style element to hide the message with !important
     function createHidingStyle() {
-      const style = document.createElement('style');
-      style.textContent = '#no-devices-message { display: none !important; }';
+      const style = document.createElement("style");
+      style.textContent = "#no-devices-message { display: none !important; }";
       document.head.appendChild(style);
     }
 
@@ -1292,21 +1330,21 @@ current_home.floors|sort(attribute='floor_number') %}
       mutations.forEach(function (mutation) {
         if (apiDeviceCountEl && parseInt(apiDeviceCountEl.textContent) > 0) {
           console.log(
-            'API confirms devices exist, permanently hiding no-devices message'
+            "API confirms devices exist, permanently hiding no-devices message"
           );
           createHidingStyle();
 
           // Show floor containers
-          document.querySelectorAll('.floor-container').forEach((container) => {
-            if (container.classList.contains('active')) {
-              container.style.display = 'block';
+          document.querySelectorAll(".floor-container").forEach((container) => {
+            if (container.classList.contains("active")) {
+              container.style.display = "block";
             }
           });
 
           // Enable dashboard stats
-          const dashboardStats = document.querySelector('.dashboard-stats');
+          const dashboardStats = document.querySelector(".dashboard-stats");
           if (dashboardStats) {
-            dashboardStats.style.display = 'flex';
+            dashboardStats.style.display = "flex";
           }
 
           observer.disconnect();
@@ -1325,32 +1363,32 @@ current_home.floors|sort(attribute='floor_number') %}
     // Initial check in case API already loaded
     if (apiDeviceCountEl && parseInt(apiDeviceCountEl.textContent) > 0) {
       console.log(
-        'API already confirms devices exist, hiding no-devices message'
+        "API already confirms devices exist, hiding no-devices message"
       );
       if (noDevicesMessage) {
-        noDevicesMessage.style.display = 'none';
+        noDevicesMessage.style.display = "none";
       }
       createHidingStyle();
     }
   });
 
   // Improved device card data-attribute enhancement for filtering
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     // Add necessary data attributes to device cards for filtering
-    const deviceCards = document.querySelectorAll('.device-card');
+    const deviceCards = document.querySelectorAll(".device-card");
 
     deviceCards.forEach((card) => {
-      const roomCard = card.closest('.room-card');
+      const roomCard = card.closest(".room-card");
       if (!roomCard) return;
 
-      const roomHeader = roomCard.querySelector('.room-header h5');
-      const roomName = roomHeader ? roomHeader.textContent.trim() : '';
+      const roomHeader = roomCard.querySelector(".room-header h5");
+      const roomName = roomHeader ? roomHeader.textContent.trim() : "";
 
-      const floorBadge = roomCard.querySelector('.badge');
-      const floorText = floorBadge ? floorBadge.textContent.trim() : '';
+      const floorBadge = roomCard.querySelector(".badge");
+      const floorText = floorBadge ? floorBadge.textContent.trim() : "";
 
       // Extract floor number - either from floor text or from the active floor
-      let floorNum = '';
+      let floorNum = "";
       if (floorText) {
         const match = floorText.match(/Floor\s+(\d+)/);
         if (match) floorNum = match[1];
@@ -1358,7 +1396,7 @@ current_home.floors|sort(attribute='floor_number') %}
 
       // If no floor number found, try to get it from the active floor container
       if (!floorNum) {
-        const floorContainer = roomCard.closest('.floor-container');
+        const floorContainer = roomCard.closest(".floor-container");
         if (floorContainer) {
           const floorIdMatch = floorContainer.id.match(/floor-(\d+)/);
           if (floorIdMatch) floorNum = floorIdMatch[1];
@@ -1367,7 +1405,7 @@ current_home.floors|sort(attribute='floor_number') %}
 
       // Set data attributes for filtering if not already set
       if (roomName && !card.dataset.room) {
-        card.dataset.room = roomName.toLowerCase().replace(/\s+/g, '_');
+        card.dataset.room = roomName.toLowerCase().replace(/\s+/g, "_");
       }
       if (floorNum && !card.dataset.floor) {
         card.dataset.floor = floorNum;
@@ -1375,25 +1413,25 @@ current_home.floors|sort(attribute='floor_number') %}
 
       // Ensure device type is set
       if (!card.dataset.deviceType) {
-        if (card.querySelector('.fa-thermometer-half')) {
-          card.dataset.deviceType = 'temperature';
-        } else if (card.querySelector('.fa-tint')) {
-          card.dataset.deviceType = 'humidity';
-        } else if (card.querySelector('.fa-lightbulb')) {
-          card.dataset.deviceType = 'light';
-        } else if (card.querySelector('.fa-wind')) {
-          card.dataset.deviceType = 'ac';
+        if (card.querySelector(".fa-thermometer-half")) {
+          card.dataset.deviceType = "temperature";
+        } else if (card.querySelector(".fa-tint")) {
+          card.dataset.deviceType = "humidity";
+        } else if (card.querySelector(".fa-lightbulb")) {
+          card.dataset.deviceType = "light";
+        } else if (card.querySelector(".fa-wind")) {
+          card.dataset.deviceType = "ac";
         } else {
           // Get type from badge if exists
           const typeBadge = card.querySelector(
-            '.card-header .badge:last-child'
+            ".card-header .badge:last-child"
           );
           if (typeBadge) {
             card.dataset.deviceType = typeBadge.textContent
               .trim()
               .toLowerCase();
           } else {
-            card.dataset.deviceType = 'generic';
+            card.dataset.deviceType = "generic";
           }
         }
       }
@@ -1404,18 +1442,18 @@ current_home.floors|sort(attribute='floor_number') %}
     );
 
     // Add click handler for apply filter button
-    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    const applyFilterBtn = document.getElementById("applyFilterBtn");
     if (applyFilterBtn) {
-      applyFilterBtn.addEventListener('click', function () {
+      applyFilterBtn.addEventListener("click", function () {
         applyDashboardFilters();
       });
     }
 
     // Show the filter container when we have devices
     if (deviceCards.length > 0) {
-      const showFilterBtn = document.getElementById('showFilterBtn');
+      const showFilterBtn = document.getElementById("showFilterBtn");
       if (showFilterBtn) {
-        showFilterBtn.style.display = 'block';
+        showFilterBtn.style.display = "block";
       }
     }
   });
@@ -1423,43 +1461,43 @@ current_home.floors|sort(attribute='floor_number') %}
   // Improved filter function
   function applyDashboardFilters() {
     const floorFilter =
-      document.getElementById('dashFilterFloor')?.value || 'all';
+      document.getElementById("dashFilterFloor")?.value || "all";
     const roomFilter =
-      document.getElementById('dashFilterRoom')?.value || 'all';
+      document.getElementById("dashFilterRoom")?.value || "all";
     const typeFilter =
-      document.getElementById('dashFilterType')?.value || 'all';
+      document.getElementById("dashFilterType")?.value || "all";
 
     console.log(
       `Applying filters: Floor=${floorFilter}, Room=${roomFilter}, Type=${typeFilter}`
     );
 
-    const deviceCards = document.querySelectorAll('.device-card');
+    const deviceCards = document.querySelectorAll(".device-card");
     let visibleCount = 0;
     let hiddenCount = 0;
 
     deviceCards.forEach((card) => {
-      const cardFloor = card.dataset.floor || '';
-      const cardRoom = card.dataset.room || '';
-      const cardType = card.dataset.deviceType || '';
+      const cardFloor = card.dataset.floor || "";
+      const cardRoom = card.dataset.room || "";
+      const cardType = card.dataset.deviceType || "";
 
       console.log(
         `Card: floor=${cardFloor}, room=${cardRoom}, type=${cardType}`
       );
 
-      const floorMatch = floorFilter === 'all' || cardFloor === floorFilter;
-      const roomMatch = roomFilter === 'all' || cardRoom === roomFilter;
-      const typeMatch = typeFilter === 'all' || cardType === typeFilter;
+      const floorMatch = floorFilter === "all" || cardFloor === floorFilter;
+      const roomMatch = roomFilter === "all" || cardRoom === roomFilter;
+      const typeMatch = typeFilter === "all" || cardType === typeFilter;
 
       const shouldShow = floorMatch && roomMatch && typeMatch;
-      const container = card.closest('.device-card-container') || card;
+      const container = card.closest(".device-card-container") || card;
 
       if (shouldShow) {
-        container.style.display = '';
-        container.classList.remove('filtered-out');
+        container.style.display = "";
+        container.classList.remove("filtered-out");
         visibleCount++;
       } else {
-        container.style.display = 'none';
-        container.classList.add('filtered-out');
+        container.style.display = "none";
+        container.classList.add("filtered-out");
         hiddenCount++;
       }
     });
@@ -1474,14 +1512,14 @@ current_home.floors|sort(attribute='floor_number') %}
     );
 
     // If all devices in a room are hidden, hide the room
-    document.querySelectorAll('.room-card').forEach((roomCard) => {
+    document.querySelectorAll(".room-card").forEach((roomCard) => {
       const visibleDevices = roomCard.querySelectorAll(
-        '.device-card-container:not(.filtered-out)'
+        ".device-card-container:not(.filtered-out)"
       ).length;
       if (visibleDevices === 0) {
-        roomCard.style.display = 'none';
+        roomCard.style.display = "none";
       } else {
-        roomCard.style.display = '';
+        roomCard.style.display = "";
       }
     });
 
@@ -1495,25 +1533,25 @@ current_home.floors|sort(attribute='floor_number') %}
     visibleCount,
     hiddenCount
   ) {
-    const summary = document.getElementById('dash-filter-summary');
+    const summary = document.getElementById("dash-filter-summary");
     if (summary) {
-      summary.style.display = 'block';
+      summary.style.display = "block";
 
       const floorText =
-        floor === 'all'
-          ? 'All Floors'
+        floor === "all"
+          ? "All Floors"
           : document.querySelector(`#dashFilterFloor option[value="${floor}"]`)
               ?.textContent || `Floor ${floor}`;
 
       const roomText =
-        room === 'all'
-          ? 'All Rooms'
+        room === "all"
+          ? "All Rooms"
           : document.querySelector(`#dashFilterRoom option[value="${room}"]`)
               ?.textContent || room;
 
       const typeText =
-        type === 'all'
-          ? 'All Types'
+        type === "all"
+          ? "All Types"
           : document.querySelector(`#dashFilterType option[value="${type}"]`)
               ?.textContent || type;
 
@@ -1521,7 +1559,7 @@ current_home.floors|sort(attribute='floor_number') %}
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <strong>Showing:</strong> ${visibleCount} device${
-        visibleCount !== 1 ? 's' : ''
+        visibleCount !== 1 ? "s" : ""
       } 
             <span class="badge bg-primary">${floorText}</span>
             <span class="badge bg-secondary">${roomText}</span>
@@ -1529,7 +1567,7 @@ current_home.floors|sort(attribute='floor_number') %}
           </div>
           <div>
             <small class="text-muted">${hiddenCount} device${
-        hiddenCount !== 1 ? 's' : ''
+        hiddenCount !== 1 ? "s" : ""
       } hidden</small>
           </div>
         </div>
@@ -1539,25 +1577,25 @@ current_home.floors|sort(attribute='floor_number') %}
 
   // Make resetDashFilters globally available
   window.resetDashFilters = function () {
-    const dashFilterFloor = document.getElementById('dashFilterFloor');
-    const dashFilterRoom = document.getElementById('dashFilterRoom');
-    const dashFilterType = document.getElementById('dashFilterType');
+    const dashFilterFloor = document.getElementById("dashFilterFloor");
+    const dashFilterRoom = document.getElementById("dashFilterRoom");
+    const dashFilterType = document.getElementById("dashFilterType");
 
-    if (dashFilterFloor) dashFilterFloor.value = 'all';
-    if (dashFilterRoom) dashFilterRoom.value = 'all';
-    if (dashFilterType) dashFilterType.value = 'all';
+    if (dashFilterFloor) dashFilterFloor.value = "all";
+    if (dashFilterRoom) dashFilterRoom.value = "all";
+    if (dashFilterType) dashFilterType.value = "all";
 
     applyDashboardFilters();
 
     // Reset room cards visibility
-    document.querySelectorAll('.room-card').forEach((roomCard) => {
-      roomCard.style.display = '';
+    document.querySelectorAll(".room-card").forEach((roomCard) => {
+      roomCard.style.display = "";
     });
 
     // Hide the summary
-    const summary = document.getElementById('dash-filter-summary');
+    const summary = document.getElementById("dash-filter-summary");
     if (summary) {
-      summary.style.display = 'none';
+      summary.style.display = "none";
     }
   };
 </script>

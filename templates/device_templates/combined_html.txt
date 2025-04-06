@@ -1,0 +1,2222 @@
+// ac.html
+<div
+  class="card device-card h-100"
+  data-device-type="ac"
+  data-floor="{{ device.floor|default('ground') }}"
+  data-room="{{ device.room|default('unknown')|lower|replace(' ', '_') }}"
+>
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <div>
+        <span class="badge bg-secondary me-1"
+          >{{ device.floor|default('Ground')|title }} Floor</span
+        >
+        <span class="badge bg-info">AC</span>
+      </div>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-wind device-icon"
+        style="color: {% if device.state %}#0dcaf0{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="device-controls">
+      <div class="form-check form-switch d-flex justify-content-center mb-3">
+        <input
+          class="form-check-input device-control-btn"
+          type="checkbox"
+          id="toggle-{{ device.device_id }}"
+          {%
+          if
+          device.state
+          %}checked{%
+          endif
+          %}
+          data-device-id="{{ device.device_id }}"
+          data-action="toggle"
+        />
+        <label class="form-check-label ms-2" for="toggle-{{ device.device_id }}"
+          >Power</label
+        >
+      </div>
+
+      <div>
+        <label for="temp-{{ device.id }}" class="form-label"
+          >Temperature (°C)</label
+        >
+        <div class="d-flex align-items-center">
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="temp_down"
+          >
+            <i class="fas fa-minus"></i>
+          </button>
+          <div class="mx-3 text-center" style="flex: 1">
+            <span class="h4" id="temp-display-{{ device.id }}"
+              >{{ device.value|default(22) }}</span
+            >
+            <span class="text-muted">°C</span>
+          </div>
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="temp_up"
+          >
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <label class="form-label">Mode</label>
+        <div class="btn-group w-100">
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="mode_cool"
+          >
+            <i class="fas fa-snowflake"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="mode_heat"
+          >
+            <i class="fas fa-fire"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="mode_fan"
+          >
+            <i class="fas fa-fan"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// car_charger.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span class="device-status status-{{ device.status }}" data-device-id="{{ device.device_id }}"></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-success">Car Charger</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i class="fas fa-charging-station device-icon" 
+         style="color: {% if device.state %}#198754{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+         data-device-id="{{ device.device_id }}"></i>
+    </div>
+    
+    <div class="alert alert-{% if device.state %}success{% else %}secondary{% endif %} text-center">
+      <strong>Status: {{ 'Charging' if device.state else 'Not Charging' }}</strong>
+    </div>
+    
+    <div class="progress mb-3">
+      <div class="progress-bar bg-success" role="progressbar" 
+           style="width: {{ device.charge_level|default(0) }}%;" 
+           aria-valuenow="{{ device.charge_level|default(0) }}" 
+           aria-valuemin="0" 
+           aria-valuemax="100">
+        {{ device.charge_level|default(0) }}%
+      </div>
+    </div>
+    
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" 
+             id="toggle-{{ device.device_id }}" 
+             {% if device.state %}checked{% endif %}
+             data-device-id="{{ device.device_id }}">
+      <label class="form-check-label" for="toggle-{{ device.device_id }}">
+        Enable Charging
+      </label>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label small">Charge Rate</label>
+      <select class="form-select form-select-sm" 
+              data-device-id="{{ device.device_id }}"
+              data-action="set_charge_rate">
+        <option value="slow" {% if device.charge_rate == 'slow' %}selected{% endif %}>Slow (Economy)</option>
+        <option value="medium" {% if device.charge_rate == 'medium' %}selected{% endif %}>Medium (Standard)</option>
+        <option value="fast" {% if device.charge_rate == 'fast' %}selected{% endif %}>Fast (Rapid)</option>
+      </select>
+    </div>
+    
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted">Power: 
+          {{ device.power|default('0') }} kW
+        </small>
+        <small class="text-muted">Estimated Time: 
+          {{ device.time_remaining|default('00:00') }}
+        </small>
+      </div>
+      <p class="last-updated mb-0 mt-2">
+        <small>Last update: 
+          <span class="last-updated-time" data-device-id="{{ device.device_id }}" data-timestamp="{{ device.last_seen }}">
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+    </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small class="text-muted device-status-text" data-device-id="{{ device.device_id }}">{{ device.status }}</small>
+      <button class="btn btn-sm btn-outline-primary refresh-button" 
+              data-refresh-target="device-{{ device.id }}" 
+              data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+// garage_door_controller.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-secondary">Garage Door</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-warehouse device-icon"
+        style="color: #6c757d; font-size: 2.5rem"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div
+      class="alert alert-{% if device.state %}success{% else %}secondary{% endif %} text-center"
+    >
+      <strong>Door Status: {{ 'Open' if device.state else 'Closed' }}</strong>
+    </div>
+
+    <div class="d-grid gap-2 mb-3">
+      <button
+        class="btn {% if device.state %}btn-outline-danger{% else %}btn-outline-success{% endif %} device-control-btn"
+        data-device-id="{{ device.device_id }}"
+        data-action="toggle"
+      >
+        <i
+          class="fas {% if device.state %}fa-door-closed{% else %}fa-door-open{% endif %} me-1"
+        ></i>
+        {{ 'Close Door' if device.state else 'Open Door' }}
+      </button>
+    </div>
+
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted"
+          >Last operated: {{ device.last_operated|default('Never') }}
+        </small>
+      </div>
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// generic.html
+<div class="card device-card device-generic h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-secondary"
+        >{{ device.type|replace('_', ' ')|title }}</span
+      >
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-microchip device-icon"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+    <div class="text-center">
+      <div class="device-status-text" data-device-id="{{ device.device_id }}">
+        {{ device.status|default('Unknown', true) }}
+      </div>
+      <div class="device-type-badge mt-2">
+        <span class="badge bg-secondary"
+          >{{ device.type|default('Generic', true)|title }}</span
+        >
+      </div>
+    </div>
+    <div class="mt-3 text-center">
+      <button
+        class="btn btn-sm btn-outline-primary device-action-btn"
+        data-device-id="{{ device.device_id }}"
+        data-action="refresh"
+      >
+        <i class="fas fa-sync-alt me-1"></i>Refresh Status
+      </button>
+    </div>
+    <div class="text-center">
+      {% if device.state is defined %}
+      <div class="mt-3">
+        <div class="form-check form-switch d-flex justify-content-center">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="toggle-{{ device.device_id }}"
+            {%
+            if
+            device.state
+            %}checked{%
+            endif
+            %}
+            data-device-id="{{ device.device_id }}"
+          />
+          <label
+            class="form-check-label ms-2"
+            for="toggle-{{ device.device_id }}"
+            >Power</label
+          >
+        </div>
+      </div>
+      {% endif %} {% if device.value is defined %}
+      <div class="mt-3">
+        <div class="value-display" data-device-id="{{ device.device_id }}">
+          {{ device.value|default('--') }}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <div>
+        <button
+          class="btn btn-sm btn-outline-primary device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="toggle"
+        >
+          <i class="fas fa-power-off"></i>
+        </button>
+        <button
+          class="btn btn-sm btn-outline-secondary refresh-button"
+          data-refresh-target="device-{{ device.id }}"
+          data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+        >
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+// humidity.html
+<div class="card device-card device-humidity h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-info">Humidity</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-tint device-icon humidity-indicator"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+    <div class="text-center">
+      <div class="value-display" data-device-id="{{ device.device_id }}">
+        --
+      </div>
+      <div class="value-unit">%</div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// irrigation_control.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-success">Irrigation</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-tint device-icon"
+        style="color: {% if device.state %}#0dcaf0{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div
+      class="alert alert-{% if device.state %}info{% else %}secondary{% endif %} text-center"
+    >
+      {% if device.state %}
+      <i class="fas fa-water me-1"></i> Currently Active {% else %}
+      <i class="fas fa-power-off me-1"></i> System Idle {% endif %}
+    </div>
+
+    <div class="form-check form-switch mb-3">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="toggle-{{ device.device_id }}"
+        {%
+        if
+        device.state
+        %}checked{%
+        endif
+        %}
+        data-device-id="{{ device.device_id }}"
+      />
+      <label class="form-check-label" for="toggle-{{ device.device_id }}">
+        Watering Active
+      </label>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label small">Watering Duration</label>
+      <div class="input-group input-group-sm">
+        <input
+          type="number"
+          class="form-control"
+          value="{{ device.duration|default(15) }}"
+          min="1"
+          max="60"
+          data-device-id="{{ device.device_id }}"
+          data-action="set_duration"
+        />
+        <span class="input-group-text">minutes</span>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label small">Next Scheduled</label>
+      <input
+        type="time"
+        class="form-control form-control-sm"
+        value="{{ device.next_schedule|default('06:00') }}"
+        data-device-id="{{ device.device_id }}"
+        data-action="set_schedule"
+      />
+    </div>
+
+    <div class="form-check mb-3">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="auto-{{ device.device_id }}"
+        {%
+        if
+        device.auto_mode
+        %}checked{%
+        endif
+        %}
+        data-device-id="{{ device.device_id }}"
+        data-action="auto_mode"
+      />
+      <label class="form-check-label" for="auto-{{ device.device_id }}">
+        Weather-based Auto Mode
+      </label>
+    </div>
+
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted"
+          >Water Usage: {{ device.water_usage|default('0') }} liters
+        </small>
+        <small class="text-muted"
+          >Zone: {{ device.zone|default('Main Garden') }}
+        </small>
+      </div>
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// light.html
+<div class="card device-card device-light h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-warning text-dark">Light</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-lightbulb device-icon light-bulb"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="device-detail-controls">
+      <label class="device-toggle">
+        <input type="checkbox" data-device-id="{{ device.device_id }}" />
+        <span class="device-toggle-slider"></span>
+      </label>
+      <div class="mt-3">
+        <label for="brightness-{{ device.id }}" class="form-label"
+          >Brightness</label
+        >
+        <input
+          type="range"
+          class="form-range range-control"
+          id="brightness-{{ device.id }}"
+          min="0"
+          max="100"
+          step="1"
+          value="50"
+          data-device-id="{{ device.device_id }}"
+          data-action="set_brightness"
+          data-value-display="brightness-value-{{ device.id }}"
+        />
+        <div class="d-flex justify-content-between">
+          <span>0%</span>
+          <span id="brightness-value-{{ device.id }}">50</span>
+          <span>100%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <div>
+        <button
+          class="btn btn-sm btn-outline-warning me-1 device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="color_warm"
+        >
+          <i class="fas fa-sun"></i>
+        </button>
+        <button
+          class="btn btn-sm btn-outline-primary device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="color_cool"
+        >
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+// light_sensor.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-warning text-dark">Light Sensor</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-sun device-icon"
+        style="color: #ffc107; font-size: 2.5rem"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="text-center">
+      <div class="value-display" data-device-id="{{ device.device_id }}">
+        {% if device.latest_value %} {{ device.latest_value|round(1) }} {% else
+        %} -- {% endif %}
+      </div>
+      <div class="value-unit">lux</div>
+    </div>
+
+    <div class="progress mt-3 mb-2">
+      <div
+        class="progress-bar bg-warning"
+        role="progressbar"
+        style="width: {{ device.light_percentage|default(50) }}%;"
+        aria-valuenow="{{ device.light_percentage|default(50) }}"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      ></div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-3">
+      <small class="text-muted">Dark</small>
+      <small class="text-muted">Bright</small>
+    </div>
+
+    <div
+      class="alert alert-{% if device.light_level == 'high' %}warning{% elif device.light_level == 'medium' %}info{% else %}secondary{% endif %} text-center"
+    >
+      Light Level: {{ device.light_level|default('Medium')|title }}
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// motion.html
+<div class="card device-card device-motion h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-secondary">Motion</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center">
+      <i
+        class="fas fa-running device-icon"
+        style="color: {% if device.state %}#dc3545{% else %}#6c757d{% endif %};"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+      <div class="mt-2">
+        <span
+          class="badge bg-{% if device.state %}danger{% else %}secondary{% endif %} p-2"
+          data-device-id="{{ device.device_id }}-state"
+        >
+          {% if device.state %}Motion Detected{% else %}No Motion{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <div class="device-controls mt-3">
+      <div class="form-check form-switch d-flex justify-content-center">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="active-{{ device.device_id }}"
+          {%
+          if
+          device.is_active
+          %}checked{%
+          endif
+          %}
+          data-device-id="{{ device.device_id }}"
+          data-action="set_active"
+        />
+        <label class="form-check-label ms-2" for="active-{{ device.device_id }}"
+          >Active</label
+        >
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// security_camera.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-danger">Camera</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-video device-icon"
+        style="color: {% if device.state %}#dc3545{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="camera-preview text-center mb-3">
+      <div
+        class="camera-placeholder bg-dark rounded"
+        style="
+          height: 120px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        {% if device.state %}
+        <span class="text-light">Live Preview</span>
+        <span
+          class="recording-indicator position-absolute"
+          style="top: 5px; right: 5px; color: #dc3545"
+        >
+          <i class="fas fa-circle fa-pulse"></i>
+        </span>
+        {% else %}
+        <span class="text-light">Camera Off</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center mb-3">
+      <div class="form-check form-switch">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="toggle-{{ device.device_id }}"
+          {%
+          if
+          device.state
+          %}checked{%
+          endif
+          %}
+          data-device-id="{{ device.device_id }}"
+        />
+        <label class="form-check-label" for="toggle-{{ device.device_id }}">
+          Camera Active
+        </label>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center mb-3">
+      <div class="btn-group btn-group-sm">
+        <button
+          class="btn btn-outline-primary device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="snapshot"
+        >
+          <i class="fas fa-camera me-1"></i>Snapshot
+        </button>
+        <button
+          class="btn btn-outline-danger device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="record"
+        >
+          <i class="fas fa-record-vinyl me-1"></i>Record
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted"
+          >Motion Detection:
+          <span
+            class="{% if device.motion_detection %}text-success{% else %}text-secondary{% endif %}"
+          >
+            {{ 'Enabled' if device.motion_detection else 'Disabled' }}
+          </span>
+        </small>
+        <small class="text-muted"
+          >Quality: {{ device.quality|default('HD') }}
+        </small>
+      </div>
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// smart_alarm.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span class="device-status status-{{ device.status }}" data-device-id="{{ device.device_id }}"></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-danger">Alarm</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i class="fas fa-bell device-icon" 
+         style="color: {% if device.state %}#dc3545{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+         data-device-id="{{ device.device_id }}"></i>
+    </div>
+    
+    <div class="alert alert-{% if device.state %}danger{% else %}success{% endif %} text-center">
+      <strong>Status: {{ 'ALARM ACTIVE' if device.state else 'Disarmed' }}</strong>
+    </div>
+    
+    <div class="d-flex justify-content-center mt-3 mb-4">
+      <div class="btn-group">
+        <button class="btn btn-outline-success device-control-btn"
+                data-device-id="{{ device.device_id }}"
+                data-action="disarm">
+          <i class="fas fa-shield-alt me-1"></i>Disarm
+        </button>
+        <button class="btn btn-outline-warning device-control-btn"
+                data-device-id="{{ device.device_id }}"
+                data-action="arm_home">
+          <i class="fas fa-home me-1"></i>Arm Home
+        </button>
+        <button class="btn btn-outline-danger device-control-btn"
+                data-device-id="{{ device.device_id }}"
+                data-action="arm_away">
+          <i class="fas fa-running me-1"></i>Arm Away
+        </button>
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label small">Activation Delay</label>
+      <select class="form-select form-select-sm" 
+              data-device-id="{{ device.device_id }}"
+              data-action="set_delay">
+        <option value="0" {% if device.delay == 0 %}selected{% endif %}>Immediate</option>
+        <option value="30" {% if device.delay == 30 %}selected{% endif %}>30 seconds</option>
+        <option value="60" {% if device.delay == 60 %}selected{% endif %}>1 minute</option>
+        <option value="120" {% if device.delay == 120 %}selected{% endif %}>2 minutes</option>
+      </select>
+    </div>
+    
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" 
+             id="notify-{{ device.device_id }}" 
+             {% if device.notifications %}checked{% endif %}
+             data-device-id="{{ device.device_id }}"
+             data-action="toggle_notifications">
+      <label class="form-check-label" for="notify-{{ device.device_id }}">
+        Mobile Notifications
+      </label>
+    </div>
+    
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted">Armed by: 
+          {{ device.armed_by|default('System') }}
+        </small>
+        <small class="text-muted">
+          {{ device.arm_time|default('') }}
+        </small>
+      </div>
+      <p class="last-updated mb-0 mt-2">
+        <small>Last update: 
+          <span class="last-updated-time" data-device-id="{{ device.device_id }}" data-timestamp="{{ device.last_seen }}">
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small class="text-muted device-status-text" data-device-id="{{ device.device_id }}">{{ device.status }}</small>
+      <button class="btn btn-sm btn-outline-danger device-control-btn" 
+              data-device-id="{{ device.device_id }}" 
+              data-action="test_siren">
+        <i class="fas fa-volume-up"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+// smart_mirror.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-dark">Smart Mirror</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-mirror device-icon"
+        style="color: {% if device.state %}#0dcaf0{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="form-check form-switch d-flex justify-content-center mb-3">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="toggle-{{ device.device_id }}"
+        {%
+        if
+        device.state
+        %}checked{%
+        endif
+        %}
+        data-device-id="{{ device.device_id }}"
+      />
+      <label class="form-check-label ms-2" for="toggle-{{ device.device_id }}"
+        >Power</label
+      >
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <button
+          class="btn btn-outline-primary btn-sm w-100 device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="weather"
+        >
+          <i class="fas fa-cloud-sun me-1"></i>Weather
+        </button>
+      </div>
+      <div class="col-6">
+        <button
+          class="btn btn-outline-primary btn-sm w-100 device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="news"
+        >
+          <i class="fas fa-newspaper me-1"></i>News
+        </button>
+      </div>
+    </div>
+
+    <div class="row g-2">
+      <div class="col-6">
+        <button
+          class="btn btn-outline-primary btn-sm w-100 device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="calendar"
+        >
+          <i class="fas fa-calendar-alt me-1"></i>Calendar
+        </button>
+      </div>
+      <div class="col-6">
+        <button
+          class="btn btn-outline-primary btn-sm w-100 device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="clock"
+        >
+          <i class="fas fa-clock me-1"></i>Clock
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <label class="form-label small">Brightness</label>
+      <input
+        type="range"
+        class="form-range device-slider"
+        id="brightness-{{ device.id }}"
+        min="0"
+        max="100"
+        step="1"
+        value="{{ device.brightness|default(70) }}"
+        data-device-id="{{ device.device_id }}"
+        data-action="set_brightness"
+        data-value-display="brightness-value-{{ device.id }}"
+      />
+      <div class="d-flex justify-content-between">
+        <span>0%</span>
+        <span id="brightness-value-{{ device.id }}"
+          >{{ device.brightness|default(70) }}%</span
+        >
+        <span>100%</span>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// smart_oven.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span class="device-status status-{{ device.status }}" data-device-id="{{ device.device_id }}"></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-danger">Oven</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i class="fas fa-fire device-icon" 
+         style="color: {% if device.state %}#dc3545{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+         data-device-id="{{ device.device_id }}"></i>
+    </div>
+    
+    <div class="form-check form-switch d-flex justify-content-center mb-3">
+      <input class="form-check-input" type="checkbox" 
+             id="toggle-{{ device.device_id }}" 
+             {% if device.state %}checked{% endif %}
+             data-device-id="{{ device.device_id }}">
+      <label class="form-check-label ms-2" for="toggle-{{ device.device_id }}">Power</label>
+    </div>
+    
+    <div class="border rounded p-2 text-center mb-3 {% if device.state %}bg-light{% endif %}">
+      <label class="form-label small">Temperature</label>
+      <div class="d-flex align-items-center">
+        <button class="btn btn-sm btn-outline-primary device-control-btn"
+                data-device-id="{{ device.device_id }}"
+                data-action="temp_down">
+          <i class="fas fa-minus"></i>
+        </button>
+        <div class="mx-3 text-center" style="flex: 1;">
+          <span class="h4" id="oven-temp-{{ device.id }}">{{ device.temperature|default(180) }}</span>
+          <span class="text-muted">°C</span>
+        </div>
+        <button class="btn btn-sm btn-outline-primary device-control-btn"
+                data-device-id="{{ device.device_id }}"
+                data-action="temp_up">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label small">Mode</label>
+      <select class="form-select form-select-sm" 
+              data-device-id="{{ device.device_id }}"
+              data-action="set_mode">
+        <option value="bake" {% if device.mode == 'bake' %}selected{% endif %}>Bake</option>
+        <option value="broil" {% if device.mode == 'broil' %}selected{% endif %}>Broil</option>
+        <option value="convection" {% if device.mode == 'convection' %}selected{% endif %}>Convection</option>
+        <option value="grill" {% if device.mode == 'grill' %}selected{% endif %}>Grill</option>
+      </select>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label small">Timer</label>
+      <div class="d-flex align-items-center">
+        <input type="number" class="form-control form-control-sm" 
+               value="{{ device.timer|default(0) }}"
+               min="0" max="180"
+               data-device-id="{{ device.device_id }}"
+               data-action="set_timer">
+        <span class="ms-2">min</span>
+      </div>
+    </div>
+    
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small>Last update: 
+          <span class="last-updated-time" data-device-id="{{ device.device_id }}" data-timestamp="{{ device.last_seen }}">
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small class="text-muted device-status-text" data-device-id="{{ device.device_id }}">{{ device.status }}</small>
+      <div>
+        <button class="btn btn-sm btn-outline-danger device-control-btn"
+                data-device-id="{{ device.device_id }}"
+                data-action="cancel">
+          <i class="fas fa-times me-1"></i>Cancel
+        </button>
+        <button class="btn btn-sm btn-outline-primary device-control-btn"
+                data-device-id="{{ device.device_id }}"
+                data-action="start">
+          <i class="fas fa-play me-1"></i>Start
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="text-center mb-3">
+  <i class="fas fa-fire device-icon" data-device-id="{{ device.device_id }}"></i>
+</div>
+<div class="device-detail-controls">
+  <div class="mb-2">
+    <label for="oven-temp-{{ device.id }}" class="form-label">Temperature</label>
+    <input
+      type="range"
+      class="form-range range-control"
+      id="oven-temp-{{ device.id }}"
+      min="30"
+      max="250"
+      step="5"
+      value="180"
+      data-device-id="{{ device.device_id }}"
+      data-action="set_temperature"
+      data-value-display="oven-temp-value-{{ device.id }}"
+    />
+    <div class="d-flex justify-content-between">
+      <span>30°C</span>
+      <span id="oven-temp-value-{{ device.id }}">180°C</span>
+      <span>250°C</span>
+    </div>
+  </div>
+  <div class="row mb-2">
+    <div class="col">
+      <button 
+        class="btn btn-sm btn-outline-primary w-100 device-action-btn" 
+        data-device-id="{{ device.device_id }}"
+        data-action="start_cooking"
+      >
+        <i class="fas fa-play me-1"></i>Start
+      </button>
+    </div>
+    <div class="col">
+      <button 
+        class="btn btn-sm btn-outline-danger w-100 device-action-btn" 
+        data-device-id="{{ device.device_id }}"
+        data-action="stop_cooking"
+      >
+        <i class="fas fa-stop me-1"></i>Stop
+      </button>
+    </div>
+  </div>
+</div>
+
+// smart_refrigerator.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-danger">Smoke Detector</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-smoke device-icon"
+        style="color: #dc3545; font-size: 2.5rem"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div
+      class="alert alert-{% if device.state %}danger{% else %}success{% endif %} text-center"
+    >
+      {% if device.state %}
+      <i class="fas fa-exclamation-triangle me-2"></i> Smoke Detected! {% else
+      %} <i class="fas fa-check-circle me-2"></i> No Smoke Detected {% endif %}
+    </div>
+
+    <div class="device-controls mt-2">
+      <div class="d-grid">
+        <button
+          class="btn btn-outline-secondary btn-sm device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="test"
+        >
+          <i class="fas fa-bell me-1"></i> Test Alarm
+        </button>
+      </div>
+    </div>
+
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-snowflake device-icon"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+    <div class="text-center mb-2">
+      <div class="value-display" data-device-id="{{ device.device_id }}">
+        --
+      </div>
+      <div class="value-unit">°C</div>
+    </div>
+    <div class="device-detail-controls">
+      <div class="mb-2">
+        <label for="temp-{{ device.id }}" class="form-label">Temperature</label>
+        <input
+          type="range"
+          class="form-range range-control"
+          id="temp-{{ device.id }}"
+          min="-2"
+          max="8"
+          step="0.5"
+          value="4"
+          data-device-id="{{ device.device_id }}"
+          data-action="set_temperature"
+          data-value-display="temp-value-{{ device.id }}"
+        />
+        <div class="d-flex justify-content-between">
+          <span>-2°C</span>
+          <span id="temp-value-{{ device.id }}">4°C</span>
+          <span>8°C</span>
+        </div>
+      </div>
+      <div class="form-check form-switch">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          role="switch"
+          id="eco-mode-{{ device.id }}"
+          data-device-id="{{ device.device_id }}"
+          data-action="eco_mode"
+        />
+        <label class="form-check-label" for="eco-mode-{{ device.id }}"
+          >Eco Mode</label
+        >
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted"
+          >Battery:
+          <span class="{% if device.battery < 20 %}text-danger{% endif %}">
+            {{ device.battery|default(100) }}%
+          </span>
+        </small>
+        <small class="text-muted"
+          >Sensitivity: {{ device.sensitivity|default('Medium') }}
+        </small>
+      </div>
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// smart_scale.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-info">Smart Scale</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-weight device-icon"
+        style="color: #6c757d; font-size: 2.5rem"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="border rounded p-2 text-center mb-3">
+      <small class="d-block text-muted">Last Measurement</small>
+      <span class="h3">{{ device.weight|default('75.5') }} kg</span>
+    </div>
+
+    <div class="row g-2">
+      <div class="col-6">
+        <div class="border rounded p-2 text-center">
+          <small class="d-block text-muted">BMI</small>
+          <span class="h5">{{ device.bmi|default('24.2') }}</span>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="border rounded p-2 text-center">
+          <small class="d-block text-muted">Body Fat</small>
+          <span class="h5">{{ device.body_fat|default('18') }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <div>
+        <button
+          class="btn btn-sm btn-outline-primary device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="sync"
+        >
+          <i class="fas fa-sync me-1"></i>Sync Data
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+// smoke_detector.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-danger">Smoke Detector</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-smoking-ban device-icon"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+    <div class="text-center">
+      <div class="smoke-status" data-device-id="{{ device.device_id }}">
+        Normal
+      </div>
+      <div class="battery-level mt-2">
+        <small
+          >Battery:
+          <span
+            class="battery-percentage"
+            data-device-id="{{ device.device_id }}"
+            >--</span
+          >%</small
+        >
+        <div class="progress" style="height: 5px">
+          <div
+            class="progress-bar bg-success"
+            role="progressbar"
+            style="width: 0%"
+            data-device-id="{{ device.device_id }}"
+            aria-valuenow="0"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          ></div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 text-center">
+      <button
+        class="btn btn-sm btn-outline-primary device-action-btn"
+        data-device-id="{{ device.device_id }}"
+        data-action="test_alarm"
+      >
+        <i class="fas fa-bell me-1"></i>Test Alarm
+      </button>
+    </div>
+    <div
+      class="alert alert-{% if device.state %}danger{% else %}success{% endif %} text-center"
+    >
+      {% if device.state %}
+      <i class="fas fa-exclamation-triangle me-2"></i> Smoke Detected! {% else
+      %} <i class="fas fa-check-circle me-2"></i> No Smoke Detected {% endif %}
+    </div>
+
+    <div class="device-controls mt-2">
+      <div class="d-grid">
+        <button
+          class="btn btn-outline-secondary btn-sm device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="test"
+        >
+          <i class="fas fa-bell me-1"></i> Test Alarm
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted"
+          >Battery:
+          <span class="{% if device.battery < 20 %}text-danger{% endif %}">
+            {{ device.battery|default(100) }}%
+          </span>
+        </small>
+        <small class="text-muted"
+          >Sensitivity: {{ device.sensitivity|default('Medium') }}
+        </small>
+      </div>
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// speaker.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-dark">Speaker</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-volume-up device-icon"
+        style="color: {% if device.state %}#0d6efd{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="device-controls">
+      <div class="form-check form-switch d-flex justify-content-center mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="toggle-{{ device.device_id }}"
+          {%
+          if
+          device.state
+          %}checked{%
+          endif
+          %}
+          data-device-id="{{ device.device_id }}"
+        />
+        <label class="form-check-label ms-2" for="toggle-{{ device.device_id }}"
+          >Power</label
+        >
+      </div>
+
+      <div>
+        <label for="volume-{{ device.id }}" class="form-label">Volume</label>
+        <input
+          type="range"
+          class="form-range device-slider"
+          id="volume-{{ device.id }}"
+          min="0"
+          max="100"
+          step="1"
+          value="{{ device.value|default(50) }}"
+          data-device-id="{{ device.device_id }}"
+          data-action="set_volume"
+          data-value-display="volume-value-{{ device.id }}"
+        />
+        <div class="d-flex justify-content-between">
+          <span>0%</span>
+          <span id="volume-value-{{ device.id }}"
+            >{{ device.value|default(50) }}%</span
+          >
+          <span>100%</span>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between mt-3">
+        <button
+          class="btn btn-sm btn-outline-primary device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="previous"
+        >
+          <i class="fas fa-step-backward"></i>
+        </button>
+        <button
+          class="btn btn-sm btn-outline-primary device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="play_pause"
+        >
+          <i class="fas fa-play"></i> / <i class="fas fa-pause"></i>
+        </button>
+        <button
+          class="btn btn-sm btn-outline-primary device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="next"
+        >
+          <i class="fas fa-step-forward"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary device-control-btn"
+        data-device-id="{{ device.device_id }}"
+        data-action="mute_toggle"
+      >
+        <i class="fas fa-volume-mute"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// temperature.html
+<div class="card device-card device-temperature h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-danger">Temperature</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-thermometer-half device-icon temperature-icon temp-indicator"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+    <div class="text-center">
+      <div class="value-display" data-device-id="{{ device.device_id }}">
+        --
+      </div>
+      <div class="value-unit">°C</div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// tv.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-dark">TV</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-tv device-icon"
+        style="color: {% if device.state %}#0dcaf0{% else %}#6c757d{% endif %}; font-size: 2.5rem;"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="device-controls">
+      <div class="form-check form-switch d-flex justify-content-center mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="toggle-{{ device.device_id }}"
+          {%
+          if
+          device.state
+          %}checked{%
+          endif
+          %}
+          data-device-id="{{ device.device_id }}"
+        />
+        <label class="form-check-label ms-2" for="toggle-{{ device.device_id }}"
+          >Power</label
+        >
+      </div>
+
+      <div class="d-flex justify-content-center mb-3">
+        <div class="btn-group">
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="volume_down"
+          >
+            <i class="fas fa-volume-down"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="volume_up"
+          >
+            <i class="fas fa-volume-up"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <div class="btn-group">
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="channel_down"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-primary device-control-btn"
+            data-device-id="{{ device.device_id }}"
+            data-action="channel_up"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary device-control-btn"
+        data-device-id="{{ device.device_id }}"
+        data-action="source"
+      >
+        <i class="fas fa-exchange-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// water_leak_sensor.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-info">Water Leak Sensor</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-tint-slash device-icon"
+        style="color: #0dcaf0; font-size: 2.5rem"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div
+      class="alert alert-{% if device.state %}danger{% else %}success{% endif %} text-center"
+    >
+      {% if device.state %}
+      <i class="fas fa-exclamation-triangle me-2"></i> Water Leak Detected! {%
+      else %} <i class="fas fa-check-circle me-2"></i> No Water Leak Detected {%
+      endif %}
+    </div>
+
+    <div class="device-controls mt-2">
+      <div class="d-grid">
+        <button
+          class="btn btn-outline-secondary btn-sm device-control-btn"
+          data-device-id="{{ device.device_id }}"
+          data-action="test"
+        >
+          <i class="fas fa-bell me-1"></i> Test Alarm
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted"
+          >Battery:
+          <span class="{% if device.battery < 20 %}text-danger{% endif %}">
+            {{ device.battery|default(100) }}%
+          </span>
+        </small>
+        <small class="text-muted"
+          >Sensitivity: {{ device.sensitivity|default('High') }}
+        </small>
+      </div>
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+// weather_station.html
+<div class="card device-card h-100">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <span
+          class="device-status status-{{ device.status }}"
+          data-device-id="{{ device.device_id }}"
+        ></span>
+        {{ device.name }}
+      </h6>
+      <span class="badge bg-info">Weather Station</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <div class="text-center mb-3">
+      <i
+        class="fas fa-cloud-sun device-icon"
+        style="color: #0dcaf0; font-size: 2.5rem"
+        data-device-id="{{ device.device_id }}"
+      ></i>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <div class="border rounded p-2 text-center">
+          <small class="d-block text-muted">Temperature</small>
+          <span class="h5">{{ device.temperature|default('22.5') }}°C</span>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="border rounded p-2 text-center">
+          <small class="d-block text-muted">Humidity</small>
+          <span class="h5">{{ device.humidity|default('65') }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <div class="border rounded p-2 text-center">
+          <small class="d-block text-muted">Wind</small>
+          <span class="h5">{{ device.wind_speed|default('12') }} km/h</span>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="border rounded p-2 text-center">
+          <small class="d-block text-muted">Pressure</small>
+          <span class="h5">{{ device.pressure|default('1013') }} hPa</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-light text-center">
+      <i
+        class="fas fa-{% if device.forecast == 'rain' %}cloud-rain{% elif device.forecast == 'sunny' %}sun{% elif device.forecast == 'cloudy' %}cloud{% else %}cloud-sun{% endif %} me-1"
+      ></i>
+      {{ device.forecast|default('Partly Cloudy')|title }}
+    </div>
+
+    <div class="mt-auto">
+      <p class="last-updated mb-0 mt-2">
+        <small
+          >Last update:
+          <span
+            class="last-updated-time"
+            data-device-id="{{ device.device_id }}"
+            data-timestamp="{{ device.last_seen }}"
+          >
+            {{ device.last_seen|default('never', true) }}
+          </span>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <small
+        class="text-muted device-status-text"
+        data-device-id="{{ device.device_id }}"
+        >{{ device.status }}</small
+      >
+      <button
+        class="btn btn-sm btn-outline-primary refresh-button"
+        data-refresh-target="device-{{ device.id }}"
+        data-refresh-url="/api/devices/{{ device.device_id }}/data?limit=1"
+      >
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
