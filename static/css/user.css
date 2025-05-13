@@ -1,0 +1,14 @@
+body {
+  padding-top: 20px;
+}
+.dashboard-card {
+  margin-bottom: 20px;
+}
+.device-status-online {
+  color: green;
+  font-weight: bold;
+}
+.device-status-offline {
+  color: red;
+  font-weight: bold;
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Home Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/user.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1>Smart Home Dashboard</h1>
+          <div>
+            {% if current_user.is_authenticated %}
+            <span class="me-3">Welcome, {{ current_user.username }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger"
+              >Logout</a
+            >
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+            {% endif %}
+          </div>
+        </div>
+      </header>
+
+      {% if current_user.is_authenticated %}
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="card dashboard-card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="card-title mb-0">Homes</h5>
+            </div>
+            <div class="card-body">
+              {% if user_homes() %}
+              <ul class="list-group">
+                {% for home in user_homes() %}
+                <li
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  {{ home.name }}
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p>No homes registered yet.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Devices Section -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card dashboard-card">
+            <div class="card-header bg-dark text-white">
+              <h5 class="card-title mb-0">Your Devices</h5>
+            </div>
+            <div class="card-body">
+              <div id="devices-container" class="row">
+                <div class="col-12 text-center">
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p>Loading devices...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="jumbotron">
+        <h2>Welcome to Smart Home Dashboard</h2>
+        <p class="lead">
+          Please login to access your smart home controls and monitoring.
+        </p>
+        <hr class="my-4" />
+        <p>
+          This system allows you to control and monitor your smart home devices
+          from anywhere.
+        </p>
+        <a
+          class="btn btn-primary btn-lg"
+          href="{{ url_for('login') }}"
+          role="button"
+          >Login Now</a
+        >
+      </div>
+      {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% if current_user.is_authenticated %}
+    <script src="{{ url_for('static', filename='js/user/deviceApi.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user/deviceDisplay.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user/deviceController.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user/main.js') }}"></script>
+    {% endif %}
+  </body>
+</html>
