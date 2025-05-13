@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash
 import datetime
 from dotenv import load_dotenv
 from models import db, User, UserSession, UserRole, Home, Floor, Room, Device, Sensor, SensorReading, Actuator, ActuatorStatus, UserAction
+from sqlalchemy import func
 
 # Load environment variables from .env file
 load_dotenv()
@@ -467,6 +468,129 @@ def admin_get_chart_data():
     
     except Exception as e:
         app.logger.error(f"Error in chart data API: {str(e)}")
+        return jsonify({'success': False, 'message': f'Internal server error: {str(e)}'}), 500
+
+@app.route('/api/power-consumption', methods=['GET'])
+@login_required
+def get_power_consumption():
+    """
+    Get power consumption data for actuators aggregated by day, month, or year.
+    
+    Query parameters:
+    - period: 'day', 'month', or 'year' (default: 'day')
+    - start_date: YYYY-MM-DD format (default: 7 days ago for day, 12 months ago for month, 5 years ago for year)
+    - end_date: YYYY-MM-DD format (default: today)
+    - actuator_id: Optional specific actuator ID to filter
+    - room_id: Optional room ID to filter actuators
+    """
+    try:
+        period = request.args.get('period', 'day')
+        actuator_id = request.args.get('actuator_id')
+        room_id = request.args.get('room_id')
+        
+        # Calculate default dates based on period
+        today = datetime.datetime.now().date()
+        if period == 'day':
+            default_start = today - datetime.timedelta(days=7)
+        elif period == 'month':
+            default_start = today.replace(year=today.year-1 if today.month == 12 else today.year, 
+                                         month=12 if today.month == 12 else today.month+1)
+        elif period == 'year':
+            default_start = today.replace(year=today.year-5)
+        else:
+            return jsonify({'success': False, 'message': 'Invalid period parameter'}), 400
+        
+        # Parse date parameters
+        try:
+            start_date_str = request.args.get('start_date', default_start.strftime('%Y-%m-%d'))
+            end_date_str = request.args.get('end_date', today.strftime('%Y-%m-%d'))
+            
+            start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
+            # Set end date to end of day
+            end_date = end_date.replace(hour=23, minute=59, second=59)
+            
+            if start_date > end_date:
+                return jsonify({'success': False, 'message': 'Start date cannot be after end date'}), 400
+        except ValueError:
+            return jsonify({'success': False, 'message': 'Invalid date format, use YYYY-MM-DD'}), 400
+        
+        # Base query for power consumption
+        query = db.session.query(
+            ActuatorStatus.actuator_id,
+            Actuator.actuator_type,
+            func.sum(ActuatorStatus.power_consumption).label('total_power')
+        ).join(Actuator)
+        
+        # Apply filters
+        query = query.filter(
+            ActuatorStatus.timestamp >= start_date,
+            ActuatorStatus.timestamp <= end_date,
+            ActuatorStatus.power_consumption != None
+        )
+        
+        if actuator_id:
+            query = query.filter(ActuatorStatus.actuator_id == actuator_id)
+        
+        if room_id:
+            query = query.filter(Actuator.room_id == room_id)
+        
+        # Add time-based grouping based on period
+        if period == 'day':
+            query = query.add_columns(
+                func.strftime('%Y-%m-%d', ActuatorStatus.timestamp).label('date')
+            ).group_by('date', ActuatorStatus.actuator_id)
+        elif period == 'month':
+            query = query.add_columns(
+                func.strftime('%Y-%m', ActuatorStatus.timestamp).label('date')
+            ).group_by('date', ActuatorStatus.actuator_id)
+        elif period == 'year':
+            query = query.add_columns(
+                func.strftime('%Y', ActuatorStatus.timestamp).label('date')
+            ).group_by('date', ActuatorStatus.actuator_id)
+        
+        result = query.all()
+        
+        # Create data structure for response
+        consumption_data = {}
+        actuator_info = {}
+        
+        for row in result:
+            date_str = row.date
+            actuator_id = row.actuator_id
+            actuator_type = row.actuator_type
+            power_value = float(row.total_power) if row.total_power else 0
+            
+            if actuator_id not in actuator_info:
+                actuator_info[actuator_id] = {
+                    'id': actuator_id,
+                    'type': actuator_type
+                }
+            
+            if date_str not in consumption_data:
+                consumption_data[date_str] = {}
+            
+            consumption_data[date_str][actuator_id] = power_value
+        
+        # Format the data for easy reading in charts
+        time_series = []
+        for date_str, actuators in sorted(consumption_data.items()):
+            data_point = {'date': date_str}
+            for act_id, power in actuators.items():
+                data_point[f'actuator_{act_id}'] = power
+            time_series.append(data_point)
+        
+        return jsonify({
+            'success': True,
+            'period': period,
+            'start_date': start_date_str,
+            'end_date': end_date_str,
+            'actuators': actuator_info,
+            'time_series': time_series
+        })
+    
+    except Exception as e:
+        app.logger.error(f"Error in power consumption API: {str(e)}")
         return jsonify({'success': False, 'message': f'Internal server error: {str(e)}'}), 500
 
 # Context processor for global template variables
