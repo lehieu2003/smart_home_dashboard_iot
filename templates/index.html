@@ -79,22 +79,48 @@
         </div>
       </div>
       {% else %}
-      <div class="jumbotron">
-        <h2>Welcome to Smart Home Dashboard</h2>
-        <p class="lead">
-          Please login to access your smart home controls and monitoring.
-        </p>
-        <hr class="my-4" />
-        <p>
-          This system allows you to control and monitor your smart home devices
-          from anywhere.
-        </p>
-        <a
-          class="btn btn-primary btn-lg"
-          href="{{ url_for('login') }}"
-          role="button"
-          >Login Now</a
+      <div
+        class="d-flex justify-content-center align-items-center"
+        style="min-height: 60vh"
+      >
+        <div
+          class="card shadow-lg border-0"
+          style="
+            max-width: 500px;
+            width: 100%;
+            background: linear-gradient(135deg, #f8fafc 60%, #e0e7ff 100%);
+          "
         >
+          <div class="card-body text-center py-5">
+            <img
+              src="https://img.icons8.com/ios-filled/100/4f8cff/smart-home-automation.png"
+              alt="Smart Home"
+              class="mb-4"
+              style="width: 80px"
+            />
+            <h2 class="fw-bold mb-3" style="color: #2d3748">
+              Welcome to Smart Home Dashboard
+            </h2>
+            <p class="lead mb-3" style="color: #4f8cff">
+              Please login to access your smart home controls and monitoring.
+            </p>
+            <hr class="my-4" />
+            <p class="mb-4" style="color: #64748b">
+              This system allows you to control and monitor your smart home
+              devices from anywhere, anytime.
+            </p>
+            <a
+              class="btn btn-primary btn-lg px-5 shadow"
+              href="{{ url_for('login') }}"
+              role="button"
+              style="
+                background: linear-gradient(90deg, #4f8cff 60%, #38bdf8 100%);
+                border: none;
+              "
+              >Login Now</a
+            >
+          </div>
+        </div>
       </div>
       {% endif %}
     </div>

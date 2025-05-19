@@ -97,6 +97,65 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+        
+    if request.method == 'POST':
+        # Get form data
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        
+        # Validate form data
+        error = None
+        
+        # Check if username already exists
+        if User.query.filter_by(username=username).first():
+            error = 'Username already exists.'
+        
+        # Check if email already exists
+        elif User.query.filter_by(email=email).first():
+            error = 'Email already registered.'
+            
+        # Check if passwords match
+        elif password != confirm_password:
+            error = 'Passwords do not match.'
+            
+        # Check password length
+        elif len(password) < 6:
+            error = 'Password must be at least 6 characters long.'
+            
+        if error:
+            flash(error, 'danger')
+            return render_template('register.html')
+            
+        # Create new user
+        new_user = User(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            role='User',
+            is_admin=False
+        )
+        new_user.set_password(password)
+        
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Registration successful! You can now log in.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An error occurred: {str(e)}', 'danger')
+            
+    return render_template('register.html')
+
 # API Routes for devices and sensors 
 @app.route('/api/devices', methods=['GET'])
 @login_required

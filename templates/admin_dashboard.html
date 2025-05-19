@@ -40,7 +40,12 @@
       </button>
       <div class="navbar-nav">
         <div class="nav-item text-nowrap">
-          <a class="nav-link px-3" href="{{ url_for('logout') }}">Sign out</a>
+          <a
+            class="nav-link px-3 btn btn-outline-danger btn-sm d-flex align-items-center"
+            href="{{ url_for('logout') }}"
+          >
+            <i class="bi bi-box-arrow-right me-2"></i> Logout
+          </a>
         </div>
       </div>
     </header>
@@ -113,6 +118,26 @@
                 </a>
               </li>
             </ul>
+
+            <!-- Add additional logout button in sidebar -->
+            <script>
+              document.addEventListener('DOMContentLoaded', function () {
+                // Add logout functionality to sidebar if needed
+                const sidebarNav = document.querySelector(
+                  '.sidebar-sticky .nav'
+                );
+                if (sidebarNav) {
+                  const logoutItem = document.createElement('li');
+                  logoutItem.className = 'nav-item mt-3';
+                  logoutItem.innerHTML = `
+                    <a class="nav-link text-danger" href="{{ url_for('logout') }}">
+                      <i class="bi bi-box-arrow-right me-1"></i> Logout
+                    </a>
+                  `;
+                  sidebarNav.appendChild(logoutItem);
+                }
+              });
+            </script>
           </div>
         </nav>
 
@@ -379,16 +404,6 @@
                 <select class="form-select" id="homeOwner" required>
                   <!-- User options will be loaded here -->
                 </select>
-              </div>
-              <div class="mb-3">
-                <label for="homeDescription" class="form-label"
-                  >Description</label
-                >
-                <textarea
-                  class="form-control"
-                  id="homeDescription"
-                  rows="3"
-                ></textarea>
               </div>
             </form>
           </div>
